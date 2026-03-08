@@ -1,0 +1,740 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <!-- ترميز الحروف: UTF-8 عشان يدعم كل اللغات -->
+  <meta charset="UTF-8" />
+  <!-- يخلي الصفحة Responsive على الموبايل -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <!-- عنوان التاب -->
+  <title>HACKY Dashboard</title>
+
+  <!-- مكتبة Font Awesome للأيقونات (أنت مستخدم user icon في About) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+
+  <style>
+    /* Reset: يشيل أي margins/padding افتراضي + يخلي القياسات ثابتة */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    /* متغيرات ألوان وثيم المشروع */
+    :root{
+      /* خلفية الصفحة (radial gradient) */
+      --page-bg: radial-gradient(900px 400px at 50% 0%, #5b0b0b 0%, #2b0a0a 55%, #160404 100%);
+
+      /* تدرج الخلفية للـ panels */
+      --panel-grad-top:#2b2b63;
+      --panel-grad-bot:#232454;
+
+      /* تدرج الخلفية للسايدبار */
+      --sidebar-grad-top:#241e4a;
+      --sidebar-grad-bot:#2d2558;
+
+      /* ألوان النص */
+      --text:#f2f4ff;
+      --text-soft:#d7d6ff;
+      --muted:#b6b3e6;
+
+      /* حدود وتحديدات */
+      --stroke: rgba(255,255,255,.14);
+      --panel-border: rgba(255,255,255,.10);
+
+      /* شادو عميق زي الصورة: عمق + highlight داخلي */
+      --shadow-deep:
+        0 22px 55px rgba(0,0,0,.75),
+        0 10px 22px rgba(0,0,0,.45),
+        0 0 0 1px rgba(255,255,255,.06) inset;
+
+      /* الشادو “الرِم” اللي تحت اللي عامل بروز */
+      --shadow-bottom:
+        0 18px 0 rgba(12,10,35,.65);
+
+      /* شادو للكروت الداخلية */
+      --shadow-card:
+        0 16px 44px rgba(0,0,0,.35),
+        0 0 0 1px rgba(255,255,255,.06) inset;
+
+      /* المسافة بين السايدبار والكونتنت */
+      --gap: 22px;
+
+      /* عرض السايدبار */
+      --sidebar-w: 260px;
+
+      /* Radiuses */
+      --r: 22px;
+      --r-sm: 16px;
+    }
+
+    /* إعدادات body الأساسية */
+    body{
+      min-height: 100vh;              /* طول الشاشة كله */
+      background: var(--page-bg);     /* الخلفية */
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+      color: var(--text);             /* لون النص الافتراضي */
+    }
+
+    /* ===== App layout: الجريد الرئيسي ===== */
+    .app{
+      min-height: 100vh;                                     /* يملى الشاشة */
+      display: grid;                                         /* layout grid */
+      grid-template-columns: var(--sidebar-w) 1fr;           /* عمود سايدبار + عمود محتوى */
+      gap: var(--gap);                                       /* مسافة بينهم */
+      padding: 28px;                                         /* هامش داخلي للصفحة */
+
+      align-items: stretch;                                  /* يخلي السايدبار والmain نفس الطول */
+      overflow: visible;                                     /* يمنع قص الشادو */
+    }
+
+    /* ===== Sidebar ===== */
+    .sidebar{
+      border-radius: var(--r);                               /* زوايا */
+      padding: 20px 18px;                                    /* padding داخلي */
+      background: linear-gradient(180deg, var(--sidebar-grad-top), var(--sidebar-grad-bot));
+      box-shadow: var(--shadow-deep), var(--shadow-bottom);  /* شادو زي الصورة */
+      border: 1px solid var(--panel-border);                 /* حدود خفيفة */
+      height: auto;                                          /* يسيبه الجريد يتحكم */
+      overflow: visible;                                     /* يمنع قص أي glow */
+    }
+
+    /* منطقة اللوجو */
+    .logo{
+      display:flex;              /* يخلي الصورة والنص جنب بعض */
+      align-items:center;        /* توسيط عمودي */
+      gap: 12px;                 /* مسافة بين الصورة وكلمة HACKY */
+      margin-bottom: 18px;       /* مسافة تحت اللوجو */
+      padding: 6px 6px 10px;     /* padding بسيط */
+    }
+
+    /* صورة اللوجو */
+    .logo img{
+      width: 34px;
+      height: 34px;
+      object-fit: contain;       /* يحافظ على النسبة */
+      flex: 0 0 auto;            /* يمنعها تتمدد */
+    }
+
+    /* كلمة HACKY */
+    .brand{
+      font-size: 20px;
+      letter-spacing: .14em;
+      font-weight: 800;
+      /* جريدنت للنص */
+      background: linear-gradient(90deg, #954cf3 0%, #00ffe8 50%, #ff000f 80%);
+      -webkit-background-clip:text;
+      background-clip:text;
+      -webkit-text-fill-color:transparent;
+    }
+
+    /* قائمة عناصر السايدبار */
+    .menu{
+      list-style:none;           /* يشيل الـ bullets */
+      display:flex;
+      flex-direction:column;     /* عمودي */
+      gap: 12px;                 /* مسافة بين العناصر */
+      margin-top: 6px;
+    }
+
+    /* زر كل عنصر في السايدبار */
+    .nav-btn{
+      width:100%;
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      padding: 11px 12px;
+      background: transparent;
+      border:0;
+      border-radius: 12px;
+      color: var(--text-soft);
+      font-size: 15px;
+      font-weight: 550;
+      cursor:pointer;
+      text-align:left;
+      transition:.2s ease;
+      white-space: nowrap;       /* يمنع نزول النص لسطرين */
+      overflow: hidden;          /* يمنع خروج النص */
+      text-overflow: ellipsis;   /* يحط ... لو النص طويل */
+    }
+
+    /* أيقونة الصورة داخل زر السايدبار */
+    .nav-btn img{
+      width: 20px;
+      height: 20px;
+      object-fit: contain;
+      flex: 0 0 auto;
+      opacity: .95;
+    }
+
+    /* hover + active للسايدبار */
+    .nav-btn:hover,
+    .nav-btn.active{
+      background: linear-gradient(90deg, #b26bff, #7a38ff);
+      color:#fff;
+      transform: translateX(2px);                       /* حركة بسيطة يمين */
+      box-shadow: 0 14px 34px rgba(122,56,255,.35);
+    }
+
+    /* ===== Main ===== */
+    .main{
+      min-width: 0;             /* مهم عشان يمنع overflow مع الجريد */
+      overflow: visible;        /* يمنع قص الشادو */
+    }
+
+    /* ===== Topbar ===== */
+    .topbar{
+      height: 66px;
+      padding: 0 18px;
+      border-radius: var(--r);
+      background: linear-gradient(180deg, var(--panel-grad-top), var(--panel-grad-bot));
+      border: 1px solid var(--panel-border);
+      box-shadow: var(--shadow-deep), var(--shadow-bottom);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;  /* search يسار + about يمين */
+      overflow: visible;
+    }
+
+    /* صندوق البحث */
+    .search{
+      width: min(560px, 60%);                  /* أقصى عرض 560 أو 60% */
+      height: 40px;
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      padding: 0 14px;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,.75);
+      background: rgba(255,255,255,.04);
+    }
+
+    /* أيقونة search svg */
+    .search svg{ width:18px; height:18px; fill: rgba(242,244,255,.75); }
+
+    /* input بتاع البحث */
+    .search input{
+      width:100%;
+      border:0;
+      outline:0;
+      background:transparent;
+      color:#fff;
+      font-size: 14px;
+    }
+
+    /* placeholder */
+    .search input::placeholder{ color:#fff; opacity:.55; }
+
+    /* زر About يمين */
+    .about{
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      text-decoration:none;
+      color: var(--text);
+      font-weight: 800;
+      font-size: 14px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      transition:.2s ease;
+    }
+    .about:hover{ background: rgba(255,255,255,.06); }
+
+    /* دائرة user icon */
+    .user{
+      width: 30px; height: 30px;
+      border-radius: 999px;
+      border: 2px solid rgba(255,255,255,.85);
+      display:grid;
+      place-items:center;
+    }
+    .user i{ color:#fff; opacity:.9; }
+
+    /* ===== Dashboard Panel ===== */
+    .dash{
+      margin-top: 18px;
+      border-radius: var(--r);
+      padding: 18px;
+      background: linear-gradient(180deg, var(--panel-grad-top), var(--panel-grad-bot));
+      border: 1px solid var(--panel-border);
+      box-shadow: var(--shadow-deep), var(--shadow-bottom);
+      overflow: visible;
+    }
+
+    /* عنوان Dashboard */
+    .dash h1{
+      font-size: 28px;
+      font-weight: 900;
+      margin-bottom: 14px;
+    }
+
+    /* Cards */
+    .cards{
+      display:grid;
+      grid-template-columns: repeat(4, minmax(0,1fr)); /* 4 كروت */
+      gap: 18px;
+      margin-bottom: 18px;
+    }
+
+    /* الكارت */
+    .card{
+      border-radius: var(--r-sm);
+      padding: 18px 22px;
+      color:#fff;
+      box-shadow: 0 16px 40px rgba(0,0,0,.35);
+    }
+
+    /* عنوان داخل الكارت */
+    .card .t{ font-size: 20px; font-weight: 900; }
+
+    /* رقم داخل الكارت */
+    .card .v{ margin-top: 8px; font-size: 28px; font-weight: 1000; opacity:.95; }
+
+    /* ألوان الكروت */
+    .c1{ background: linear-gradient(90deg,#6b3bff,#8d77c7); }
+    .c2{ background: linear-gradient(90deg,#2fb9b7,#78c9de); }
+    .c3{ background: linear-gradient(90deg,#ff3bd4,#ff86ff); }
+    .c4{ background: linear-gradient(90deg,#7a38ff,#b26bff); }
+
+    /* Grid تحت: chart + intel */
+    .dash-grid{
+      display:grid;
+      grid-template-columns: 1.75fr 0.9fr; /* الشارت أعرض */
+      gap: 18px;
+      align-items: stretch;
+    }
+
+    /* Panel عام */
+    .panel{
+      border-radius: var(--r-sm);
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.10);
+      box-shadow: var(--shadow-card);
+      overflow:hidden;
+    }
+
+    /* ===== Chart Panel ===== */
+    .chart-panel{
+      padding: 18px;
+      display:flex;
+      flex-direction:column;
+      gap: 14px;
+    }
+
+    /* صندوق الشارت */
+    .chart-box{
+      border-radius: var(--r-sm);
+      background: rgba(0,0,0,.12);
+      padding: 14px 14px 34px; /* مساحة تحت لأسماء الشهور */
+      position: relative;
+      overflow:hidden;
+      height: 300px;
+      display:grid;
+      grid-template-columns: 44px 1fr; /* y-axis + bars */
+      gap: 10px;
+    }
+
+    /* خطوط الشبكة داخل الشارت */
+    .chart-box::before{
+      content:"";
+      position:absolute;
+      left: 44px; right: 0; top:0; bottom:0;
+      background:
+        repeating-linear-gradient(
+          to top,
+          rgba(255,255,255,.20) 0px,
+          rgba(255,255,255,.20) 1px,
+          transparent 1px,
+          transparent 54px
+        );
+      opacity:.65;
+      pointer-events:none;
+    }
+
+    /* محور Y */
+    .y-axis{
+      position: relative;
+      height: 100%;
+      display:flex;
+      flex-direction:column;
+      justify-content:space-between;
+      padding: 4px 0 30px; /* مساحة تحت عشان labels */
+      color: rgba(255,255,255,.65);
+      font-size: 13px;
+    }
+    .y-axis span{
+      display:block;
+      text-align:left;
+      padding-left: 6px;
+    }
+
+    /* منطقة الأعمدة */
+    .bars{
+      height: 100%;
+      display:flex;
+      align-items:flex-end;  /* الأعمدة تبدأ من الصفر */
+      gap: 18px;             /* مسافة بين الشهور */
+      padding: 0;            /* يمنع رفع الأعمدة */
+      position: relative;
+      z-index: 1;
+    }
+
+    /* جروب الشهر */
+    .month{
+      flex: 1;
+      height: 100%;
+      display:flex;
+      align-items:flex-end;
+      justify-content:center;
+      position:relative;
+      gap: 0;                /* الأعمدة الثلاثة لازقة */
+      padding-bottom: 0;     /* بدون رفع */
+    }
+
+    /* العمود */
+    .month .col{
+      width: 12px;
+      border-radius: 0;      /* مستطيلات */
+      box-shadow: 0 12px 22px rgba(0,0,0,.35);
+    }
+
+    /* العمود A (أخضر/تركواز) */
+    .month .cA{
+      height: calc(var(--a) * 1%);
+      background: linear-gradient(180deg,#39fff2,#1cb5b7);
+    }
+
+    /* العمود B (بنفسجي) */
+    .month .cB{
+      height: calc(var(--b) * 1%);
+      background: linear-gradient(180deg,#c06bff,#7a38ff);
+    }
+
+    /* العمود C (وردي/بنفسجي) */
+    .month .cC{
+      height: calc(var(--c) * 1%);
+      background: linear-gradient(180deg,#ff57ff,#b24bff);
+      opacity:.92;
+    }
+
+    /* اسم الشهر تحت محور الصفر */
+    .month span{
+      position:absolute;
+      bottom: -22px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 12px;
+      color: rgba(255,255,255,.7);
+    }
+
+    /* ===== Attacks ===== */
+    .attacks{
+      border-radius: var(--r-sm);
+      background: rgba(255,255,255,.05);
+      padding: 16px 16px;
+      display:flex;
+      align-items:center;
+      gap: 16px;
+    }
+
+    /* كلمة Attacks */
+    .attacks .label{
+      font-size: 26px;
+      font-weight: 1000;
+      color:#ff2a2a;
+      text-shadow: 0 2px 0 rgba(0,0,0,.35);
+      min-width: 110px;
+    }
+
+    /* container للبار */
+    .attack-pill{
+      flex:1;
+      cursor:pointer;      /* يخليها clickable */
+      user-select:none;    /* يمنع تحديد النص */
+    }
+
+    /* إطار البار */
+    .attack-shell{
+      display:block;
+      height: 18px;
+      border-radius: 999px;
+      padding: 3px;
+      background: rgba(0,0,0,.10);
+      border: 2px solid rgba(255,255,255,.95);
+      box-shadow:
+        0 0 0 3px rgba(40,110,255,.85),
+        0 12px 22px rgba(0,0,0,.35);
+    }
+
+    /* البار الأحمر المتحرك */
+    .attack-fill{
+      display:block;
+      height: 100%;
+      width: 92%; /* بيتغير بالـ JS */
+      border-radius: 999px;
+      background: linear-gradient(90deg,#ff1414,#ff6b6b);
+      box-shadow: 0 10px 20px rgba(255,20,20,.30);
+      transition: width .28s ease; /* انيميشن للتغيير */
+    }
+
+    /* ===== Intel Panel ===== */
+    .intel-panel{
+      padding: 18px;
+      display:flex;
+      flex-direction:column;
+      gap: 14px;
+    }
+
+    /* عنوان Threat Intelligence */
+    .intel-title{
+      text-align:center;
+      font-weight: 900;
+      font-size: 18px;
+    }
+
+    /* جسم الدونت + الليجند */
+    .intel-body{
+      display:grid;
+      justify-items:center;
+      gap: 14px;
+    }
+
+    /* الدونت */
+    .donut{
+      width:150px;
+      height:150px;
+      border-radius:50%;
+      position:relative;
+      background: conic-gradient(
+        #ff5c5c 0 calc(var(--m)*1%),
+        #ff9b3d 0 calc((var(--m) + var(--ph))*1%),
+        #ffd24a 0 calc((var(--m) + var(--ph) + var(--na))*1%),
+        #4fdcff 0 100%
+      );
+      box-shadow: 0 16px 38px rgba(0,0,0,.35);
+      border: 2px solid rgba(255,255,255,.22);
+    }
+
+    /* الدائرة الداخلية اللي بتعمل hole */
+    .donut::after{
+      content:"";
+      position:absolute;
+      inset:18px;            /* سماكة الدونت */
+      border-radius:50%;
+      background:#2e2d55;
+      z-index:1;
+    }
+
+    /* النص داخل الدونت */
+    .donut-center{
+      position:absolute;
+      inset:0;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap:2px;
+      line-height:1;
+      z-index:2; /* فوق الدائرة الداخلية */
+    }
+
+    .donut-small{ color:#ff7a2f; font-weight:900; font-size:18px; }
+    .donut-big{ color:#fff; font-weight:1000; font-size:30px; }
+
+    /* قائمة الليجند */
+    .legend{
+      list-style:none;
+      width: 100%;
+      max-width: 240px;
+      display:flex;
+      flex-direction:column;
+      gap: 10px;
+      padding: 0;
+      margin: 0;
+    }
+
+    /* سطر الليجند */
+    .legend li{
+      display:flex;
+      align-items:center;
+      gap: 12px;
+      font-size: 18px;
+      font-weight: 800;
+    }
+
+    /* نقطة اللون */
+    .dot{ width: 14px; height: 14px; border-radius: 50%; }
+    .m{ background:#ff5c5c; }
+    .ph{ background:#ff9b3d; }
+    .na{ background:#ffd24a; }
+    .de{ background:#4fdcff; }
+
+    /* ألوان النص */
+    .t1{ color:#ff5c5c; }
+    .t2{ color:#ff9b3d; }
+    .t3{ color:#ffd24a; }
+    .t4{ color:#4fdcff; }
+
+    /* ===== Responsive ===== */
+    @media (max-width: 1100px){
+      .cards{ grid-template-columns: repeat(2, minmax(0,1fr)); } /* كروت 2x2 */
+      .dash-grid{ grid-template-columns: 1fr; }                  /* الشارت تحت intel */
+      .search{ width: min(560px, 70%); }
+    }
+
+    @media (max-width: 900px){
+      .app{ grid-template-columns: 1fr; } /* السايدبار فوق المحتوى */
+    }
+  </style>
+</head>
+
+<body>
+  <!-- الجريد الرئيسي -->
+  <div class="app">
+
+    <!-- السايدبار -->
+    <aside class="sidebar">
+      <div class="logo">
+        <img src="Images/logo.png" alt="Logo">
+        <span class="brand">HACKY</span>
+      </div>
+
+      <!-- عناصر السايدبار -->
+      <ul class="menu">
+        <li><button class="nav-btn active"><img src="Images/Dashboard.png" alt="">Dashboard</button></li>
+        <li><button class="nav-btn"><img src="Images/Logs.png" alt="">Logs</button></li>
+        <li><button class="nav-btn"><img src="Images/Alerts.png" alt="">Alerts</button></li>
+        <li><button class="nav-btn"><img src="Images/Incidents.png" alt="">Incidents</button></li>
+        <li><button class="nav-btn"><img src="Images/Authentication.png" alt="">Authentication</button></li>
+        <li><button class="nav-btn"><img src="Images/Endpoints.png" alt="">Endpoints</button></li>
+        <li><button class="nav-btn"><img src="Images/Threat-Intelligence.png" alt="">Threat Intelligence</button></li>
+      </ul>
+    </aside>
+
+    <!-- المحتوى الرئيسي -->
+    <main class="main">
+
+      <!-- التوب بار -->
+      <header class="topbar">
+        <div class="search">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M10 4a6 6 0 1 1 0 12A6 6 0 0 1 10 4m0-2a8 8 0 1 0 4.9 14.3l4.4 4.4 1.4-1.4-4.4-4.4A8 8 0 0 0 10 2z"/>
+          </svg>
+          <input type="text" placeholder="Type to search..." />
+        </div>
+
+        <a class="about" href="#">
+          <div class="user"><i class="fa-regular fa-user"></i></div>
+          <span>About</span>
+        </a>
+      </header>
+
+      <!-- بلوك الداش الكبير -->
+      <section class="dash">
+        <h1>Dashboard</h1>
+
+        <!-- الأربع كروت -->
+        <div class="cards">
+          <div class="card c1"><div class="t">Total Alerts</div><div class="v">33</div></div>
+          <div class="card c2"><div class="t">Medium</div><div class="v">24</div></div>
+          <div class="card c3"><div class="t">High</div><div class="v">6</div></div>
+          <div class="card c4"><div class="t">Critical</div><div class="v">3</div></div>
+        </div>
+
+        <!-- جريد الشارت + intel -->
+        <div class="dash-grid">
+
+          <!-- بانل الشارت -->
+          <div class="panel chart-panel">
+            <div class="chart-box">
+
+              <!-- محور Y -->
+              <div class="y-axis">
+                <span>60</span><span>50</span><span>40</span><span>30</span><span>20</span><span>10</span><span>0</span>
+              </div>
+
+              <!-- الأعمدة -->
+              <div class="bars">
+                <div class="month" style="--a:8;--b:24;--c:66"><i class="col cA"></i><i class="col cB"></i><i class="col cC"></i><span>Jan</span></div>
+                <div class="month" style="--a:38;--b:22;--c:48"><i class="col cA"></i><i class="col cB"></i><i class="col cC"></i><span>Feb</span></div>
+                <div class="month" style="--a:10;--b:20;--c:32"><i class="col cA"></i><i class="col cB"></i><i class="col cC"></i><span>Mar</span></div>
+                <div class="month" style="--a:4;--b:40;--c:64"><i class="col cA"></i><i class="col cB"></i><i class="col cC"></i><span>Apr</span></div>
+                <div class="month" style="--a:58;--b:20;--c:70"><i class="col cA"></i><i class="col cB"></i><i class="col cC"></i><span>May</span></div>
+                <div class="month" style="--a:6;--b:24;--c:68"><i class="col cA"></i><i class="col cB"></i><i class="col cC"></i><span>Jun</span></div>
+                <div class="month" style="--a:12;--b:40;--c:64"><i class="col cA"></i><i class="col cB"></i><i class="col cC"></i><span>Jul</span></div>
+                <div class="month" style="--a:18;--b:24;--c:54"><i class="col cA"></i><i class="col cB"></i><i class="col cC"></i><span>Aug</span></div>
+                <div class="month" style="--a:6;--b:10;--c:62"><i class="col cA"></i><i class="col cB"></i><i class="col cC"></i><span>Sep</span></div>
+                <div class="month" style="--a:44;--b:8;--c:66"><i class="col cA"></i><i class="col cB"></i><i class="col cC"></i><span>Oct</span></div>
+                <div class="month" style="--a:10;--b:6;--c:24"><i class="col cA"></i><i class="col cB"></i><i class="col cC"></i><span>Nov</span></div>
+                <div class="month" style="--a:3;--b:22;--c:34"><i class="col cA"></i><i class="col cB"></i><i class="col cC"></i><span>Dec</span></div>
+              </div>
+            </div>
+
+            <!-- Attacks bar -->
+            <div class="attacks" id="attackBar">
+              <div class="label">Attacks</div>
+              <div class="attack-pill">
+                <span class="attack-shell">
+                  <span class="attack-fill" id="attackFill"></span>
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- بانل Threat Intelligence -->
+          <div class="panel intel-panel">
+            <div class="intel-title">Threat Intelligence</div>
+            <div class="intel-body">
+              <div class="donut" style="--m:40;--ph:25;--na:20;--de:15;">
+                <div class="donut-center">
+                  <div class="donut-small">Total</div>
+                  <div class="donut-big">100%</div>
+                </div>
+              </div>
+
+              <ul class="legend">
+                <li><span class="dot m"></span><span class="t1">Malware</span></li>
+                <li><span class="dot ph"></span><span class="t2">Phishing</span></li>
+                <li><span class="dot na"></span><span class="t3">Network Attack</span></li>
+                <li><span class="dot de"></span><span class="t4">Data Exfiltration</span></li>
+              </ul>
+            </div>
+          </div>
+
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    // قيمة عرض البار كنسبة مئوية (هنقللها مع كل كليك)
+    let width = 100;
+
+    // مقدار النقصان في كل كليك
+    const step = 8;
+
+    // أقل عرض ممكن يوصل له
+    const minW = 0;
+
+    // أقصى عرض (نرجع له لما نوصل للأقل)
+    const maxW = 100;
+
+    // عنصر البار كله (المنطقة اللي بتستقبل click)
+    const attackBar = document.getElementById("attackBar");
+
+    // عنصر الجزء الأحمر الداخلي اللي بيتغير عرضه
+    const attackFill = document.getElementById("attackFill");
+
+    // أول ما الصفحة تفتح: ثبت عرض البار على 100%
+    attackFill.style.width = width + "%";
+
+    // Event: عند الضغط على البار
+    attackBar.addEventListener("click", () => {
+
+      // قلل العرض بمقدار step
+      width -= step;
+
+      // لو وصل تحت الصفر: رجعه 100% تاني (loop)
+      if (width < minW) width = maxW;
+
+      // طبق العرض الجديد
+      attackFill.style.width = width + "%";
+    });
+  </script>
+</body>
+</html>
